@@ -1,0 +1,170 @@
+ATLAS ENGINEERING REFERENCE MANUAL
+Version 2.4 | Confidential – Internal Use Only
+
+================================================================================
+SECTION 1: HEAT EXCHANGER SPECIFICATIONS
+================================================================================
+
+1.1 Overview
+The Model HX-200 shell-and-tube heat exchanger is designed for high-pressure
+industrial cooling applications. It transfers thermal energy between two fluid
+streams without mixing them.
+
+1.2 Operating Parameters
+- Maximum operating temperature: 350°C (662°F)
+- Minimum operating temperature: -20°C (-4°F)
+- Maximum operating pressure: 25 bar (362 psi)
+- Design pressure: 30 bar (435 psi) with a safety factor of 1.5
+- Flow rate (shell side): 50–200 L/min
+- Flow rate (tube side): 20–80 L/min
+- Heat transfer area: 12.5 m²
+- Number of tube passes: 2
+- Shell diameter: 450 mm
+- Material: AISI 316L stainless steel (wetted parts), carbon steel (shell)
+
+1.3 Maintenance Schedule
+- Inspect tube bundle for fouling every 6 months.
+- Replace gaskets annually or when leak is detected.
+- Perform pressure test at 1.5× design pressure every 2 years.
+- Clean shell side with approved descaling agent quarterly.
+
+================================================================================
+SECTION 2: PRESSURE RELIEF VALVE (PRV) – MODEL PRV-500
+================================================================================
+
+2.1 Function
+The pressure relief valve automatically opens when upstream pressure exceeds
+the set pressure, diverting flow to a safe discharge path and protecting the
+system from over-pressurization.
+
+2.2 Set Pressure and Reseat Pressure
+- Set pressure: 22 bar (319 psi)
+- Reseat pressure (blowdown): 20 bar (290 psi) — the valve re-closes when
+  pressure drops to this level.
+- Maximum accumulation: 10% above set pressure = 24.2 bar
+
+2.3 Operation Sequence
+Step 1 – Normal operation: Disc is held closed by spring force.
+Step 2 – Over-pressure event: When upstream pressure reaches 22 bar, the
+         spring force is overcome and the disc lifts.
+Step 3 – Relief: Gas or liquid is discharged through the outlet to the
+         flare header or vent stack.
+Step 4 – Reseat: Once pressure drops below 20 bar, spring force closes
+         the disc.
+
+2.4 Testing
+PRVs must be bench-tested annually and after any activation event.
+Testing procedure: ISO 4126-1 compliant pop test on certified test bench.
+
+================================================================================
+SECTION 3: STRUCTURAL STEEL FRAME – TYPE SF-1000
+================================================================================
+
+3.1 Material
+- Primary members: ASTM A572 Grade 50 structural steel
+- Yield strength: 345 MPa (50 ksi)
+- Ultimate tensile strength: 450 MPa (65 ksi)
+- Weld filler: E70XX electrodes
+
+3.2 Load-Bearing Requirements
+- Dead load capacity: 500 kN per column
+- Live load capacity: 250 kN per column
+- Wind load design: AS/NZS 1170.2 Category C terrain
+- Seismic design: Zone 2A per ASCE 7-22
+- Maximum allowable deflection: L/360 for live loads, L/240 for total loads
+
+3.3 Connection Details
+- Bolted connections: ASTM A325 high-strength bolts, minimum 19 mm diameter
+- Welded connections: Full penetration welds inspected by UT (ultrasonic testing)
+- Base plates: 25 mm thick minimum, anchor bolts ASTM F1554 Grade 55
+
+3.4 Fire Rating
+- All structural members to be protected to achieve 2-hour fire resistance
+  rating per BS EN 1363-1 using intumescent paint or mineral wool cladding.
+
+================================================================================
+SECTION 4: DATABASE SYSTEM – FAILOVER PROCEDURE
+================================================================================
+
+4.1 Primary Database Configuration
+- Primary server: DB-PROD-01 (Active)
+- Standby server: DB-PROD-02 (Hot standby, synchronous replication)
+- Replication lag target: < 500 ms
+- Technology: PostgreSQL 15 with Patroni cluster management
+
+4.2 Automatic Failover
+Patroni monitors the primary every 10 seconds via DCS (etcd).
+If the primary fails to respond for 30 seconds (3 consecutive health checks),
+Patroni promotes the standby automatically.
+
+Automatic failover steps:
+1. Patroni detects primary node failure after 30 s timeout.
+2. Leader election occurs in etcd cluster.
+3. Standby DB-PROD-02 is promoted to primary.
+4. VIP (Virtual IP) 10.0.1.100 is moved to new primary.
+5. Application connection pool reconnects within 60 s.
+6. Failed node DB-PROD-01 is fenced (STONITH) to prevent split-brain.
+
+4.3 Manual Failover Procedure
+Use this procedure for planned maintenance:
+
+   Step 1: Notify stakeholders and open change window.
+   Step 2: Verify standby lag < 100 ms:
+           SELECT * FROM pg_stat_replication;
+   Step 3: Initiate switchover:
+           patronictl -c /etc/patroni/config.yml switchover --master DB-PROD-01
+   Step 4: Confirm new primary:
+           patronictl -c /etc/patroni/config.yml list
+   Step 5: Update monitoring dashboards.
+   Step 6: Close change window and notify stakeholders.
+
+4.4 Recovery Time Objective (RTO) and RPO
+- RTO: < 2 minutes (automatic), < 5 minutes (manual)
+- RPO: 0 data loss (synchronous replication)
+
+================================================================================
+SECTION 5: ELECTRICAL SYSTEMS
+================================================================================
+
+5.1 Power Distribution
+- Main supply: 11 kV, 3-phase, 50 Hz
+- Main transformer: 11 kV / 415 V, 2 MVA, Dyn11 vector group
+- Emergency generator: 500 kVA diesel, auto-start on mains failure within 10 s
+- UPS systems: 200 kVA for critical instrumentation, 30-minute battery backup
+
+5.2 Motor Control Centers (MCC)
+- MCC-01: Process pumps (P-101 through P-115)
+- MCC-02: HVAC and utilities
+- MCC-03: Fire suppression and emergency systems
+- All MCCs rated IP54 minimum; MCC-03 rated IP65
+
+5.3 Cable Specifications
+- Power cables: XLPE insulated, armoured, 600/1000 V grade
+- Instrumentation cables: Overall screened, twisted pair, 300 V grade
+- Fire-resistant cables: MICC or LSOH FR rated for emergency circuits
+- Maximum voltage drop: 2.5% for power circuits, 1% for control circuits
+
+================================================================================
+SECTION 6: INSTRUMENTATION AND CONTROL
+================================================================================
+
+6.1 Control Philosophy
+The plant operates under a distributed control system (DCS) with a safety
+instrumented system (SIS) providing independent overpressure and high-temperature
+trip functions.
+
+6.2 Key Instruments
+- PT-101: Pressure transmitter, range 0–40 bar, accuracy ±0.1%
+- TT-201: Temperature transmitter, range -50–400°C, accuracy ±0.5°C
+- FT-301: Coriolis flow transmitter, range 0–300 L/min, accuracy ±0.2%
+- LT-401: Guided wave radar level transmitter, range 0–3 m, accuracy ±5 mm
+
+6.3 Alarm Philosophy
+- Priority 1 (Red): Immediate action required — process safety at risk
+- Priority 2 (Amber): Action required within 15 minutes
+- Priority 3 (Yellow): Monitoring required, action within 1 hour
+- Alarm rationalization per EEMUA 191 guidelines
+
+================================================================================
+END OF DOCUMENT
+================================================================================
