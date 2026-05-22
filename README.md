@@ -43,19 +43,6 @@ Atlas allows users to upload engineering documents (PDF, DOCX, TXT, Markdown) an
 
 ---
 
-## Technology Stack
-
-* Python 3.11
-* FastAPI
-* Streamlit
-* FAISS (vector search)
-* sentence-transformers (embeddings)
-* PyTorch
-* pytest
-* Loguru
-
----
-
 ## Setup
 
 ### 1. Clone the repository
@@ -162,5 +149,3 @@ python scripts/run_evaluation.py
 * Context Relevance (CR)
 * Answer Faithfulness (AF)
 * Retrieval Hit (RH)
-
----
