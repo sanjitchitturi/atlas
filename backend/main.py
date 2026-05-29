@@ -1,10 +1,8 @@
-"""Atlas RAG – FastAPI application entry point."""
 import os
 from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-# Ensure logs dir exists before logging module is imported
 Path("logs").mkdir(exist_ok=True)
 
 from app.api.routes_ingest import router as ingest_router
@@ -14,7 +12,7 @@ from app.core.config import settings
 from app.core.logging import logger
 
 app = FastAPI(
-    title="Atlas – Engineering Knowledge Assistant",
+    title="Atlas",
     description="RAG-powered Q&A over your engineering documents.",
     version="1.0.0",
 )
