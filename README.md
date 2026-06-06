@@ -4,12 +4,6 @@ Atlas is a Retrieval-Augmented Generation (RAG) system that enables question ans
 
 ---
 
-## Overview
-
-Atlas allows users to upload engineering documents (PDF, DOCX, TXT, Markdown) and ask questions in natural language. The system retrieves relevant document passages using semantic search and generates grounded answers with citations.
-
----
-
 ## Architecture
 
 ### Ingestion Pipeline
