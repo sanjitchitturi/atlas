@@ -1,6 +1,6 @@
 fastapi>=0.115,<1
 uvicorn>=0.30,<1
-streamlit>=1.40,<2
+streamlit>=1.66.1,<2
 faiss-cpu>=1.9,<2
 numpy>=2,<3
 pydantic-settings>=2.5,<3
